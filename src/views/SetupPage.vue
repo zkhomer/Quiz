@@ -42,7 +42,7 @@ export default Vue.extend({
       },
       valid: true,
       minValue: 1,
-      maxValue: 116,
+      maxValue: 116
     };
   },
   computed: {
@@ -66,44 +66,34 @@ export default Vue.extend({
       console.log("asdasd");
     },
     async setupQuiz() {
-
-      if (!Number(this.setup.questions) > 0){
-        return
-      }
-      if(Number(this.setup.questions) > 116) {
-        return
+      try {
+        if (!(Number(this.setup.questions) > 0) || Number(this.setup.questions) > 116) {
+          return;
         }
-
-      const data = await axios
-        .get(
-          `https://opentdb.com/api.php?amount=${
-            this.setup.questions
-          }&category=${this.setup.categoriesValue.id}&difficulty=${
-            this.setup.difficultyValue
-          }&type=multiple`
-        )
-        .then((res) => res.data);
-      this.categories = data.results;
-      this.$store.commit("setSetupData", this.categories);
-      this.valid = !this.valid;
-      this.$router.push(
-        {
+        const res = await axios.get(
+          `https://opentdb.com/api.php?amount=${this.setup.questions}&category=${this.setup.categoriesValue.id}&difficulty=${this.setup.difficultyValue}&type=multiple`);
+        const data = res.data;
+        this.categories = data.results;
+        this.$store.commit("setSetupData", this.categories);
+        this.valid = !this.valid;
+        await this.$router.push({
           name: "QuizForm",
           params: {
             count: 1,
             name: name + this.count
           }
-        }
-      ).catch(err => {
-        throw err;
-      });
+        });
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
     }
   },
   watch: {
 
     setup: {
       handler() {
-         if (Object.values(this.setup).every(el => el)) {
+        if (Object.values(this.setup).every(el => el)) {
           this.valid = false;
         } else {
           this.valid = true;

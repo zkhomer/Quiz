@@ -77,10 +77,13 @@ export default new Vuex.Store({
   },
   actions: {
     async getCategories(ctx) {
-      const data = await axios
-        .get("https://opentdb.com/api_category.php")
-        .then((res) => res.data.trivia_categories);
-      ctx.commit("setCategories", data);
+      try {
+        const res = await axios.get("https://opentdb.com/api_category.php");
+        const data = res.data.trivia_categories;
+        ctx.commit("setCategories", data);
+      } catch (error) {
+        console.error(error);
+      }
     },
   },
   modules: {},
