@@ -25,10 +25,12 @@ export default Vue.extend({
       required: true,
     },
     minValue: {
-      type: String,
+      type: Number,
+      default: 1,
     },
     maxValue: {
-      type: String,
+      type: Number,
+      default: 116,
     },
   },
   data() {
@@ -38,7 +40,7 @@ export default Vue.extend({
   },
   methods: {
     emitValue() {
-      this.$emit("inputValue", this.inputValue);
+      this.$emit("input-value", this.inputValue);
     },
   },
 });

@@ -16,5 +16,4 @@ export default Vue.extend({
     ...mapGetters(["getResultAnswers"]),
   },
 });
-
 </script>

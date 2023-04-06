@@ -24,7 +24,7 @@ export default Vue.extend({
   },
   methods: {
     emmitValue() {
-      this.$emit("selectValue", this.selectValue);
+      this.$emit("select-value", this.selectValue);
     },
   },
 });

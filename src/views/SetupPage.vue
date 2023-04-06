@@ -3,17 +3,17 @@
     <h1>SetupPage</h1>
     <form @submit.prevent class="setupForm">
       <h3 v-if="valid">pls fill all inputs!!!!</h3>
-      <BaseSelect v-on:selectValue="setSelectValue" :options="allCategories" />
+      <BaseSelect v-on:select-value="setSelectValue" :options="allCategories" />
       <BaseSelect
-        v-on:selectValue="setDifficultyValue"
+        v-on:select-value="setDifficultyValue"
         :options="allDifficulty"
       />
       <BaseInput
         placeholder="Select a number of questions of"
         type="number"
-        minValue="1"
-        maxValue="116"
-        v-on:inputValue="setQuestions"
+        :minValue="minValue"
+        :maxValue="maxValue"
+        v-on:input-value="setQuestions"
       />
       <div>
         <button :disabled="valid" @click="setupQuiz">Start a quiz</button>
@@ -40,7 +40,9 @@ export default Vue.extend({
         difficultyValue: "",
         questions: ""
       },
-      valid: true
+      valid: true,
+      minValue: 1,
+      maxValue: 116,
     };
   },
   computed: {
