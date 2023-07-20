@@ -8,11 +8,11 @@
         {{ answer }}
       </label>
     </div>
-    <div class="error" v-if="!selectedAnswer">Please select an answer to continue.</div>
+    <div class="error" v-if="isErrMsg && !selectedAnswer ">Please select an answer to continue.</div>
     <div class="buttons">
       <BaseButton v-if="currentQuestionIndex === 0" @click="restartQuiz">Restart Quiz</BaseButton>
       <BaseButton v-else @click="prevQuestion">Prev</BaseButton>
-      <BaseButton @click="nextQuestion" :disabled="!selectedAnswer">
+      <BaseButton @click="nextQuestion" >
         {{ isLastQuestion ? "Finish" : "Next" }}
       </BaseButton>
     </div>
@@ -33,7 +33,8 @@ export default {
 
   data() {
     return {
-      selectedAnswer: ""
+      selectedAnswer: "",
+      isErrMsg: false
     };
   },
 
@@ -73,10 +74,10 @@ export default {
     },
     nextQuestion() {
       if (!this.selectedAnswer) {
-        alert("Please select an answer to continue.");
+        this.isErrMsg = true;
         return;
       }
-
+      this.isErrMsg = false;
       this.$store.commit("setSelectedAnswer", this.selectedAnswer);
       const nextQuestionIndex = this.currentQuestionIndex + 1;
       if (nextQuestionIndex >= this.totalQuestions) {
