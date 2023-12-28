@@ -20,15 +20,19 @@
 </template>
 
 <script>
-import BaseInput from "@/components/BaseInput.vue";
 import BaseButton from "@/components/BaseButton.vue";
 
 export default {
   name: "QuizQuestionPage",
 
   components: {
-    BaseInput,
     BaseButton
+  },
+  props: {
+    questionIndex: {
+      type: String,
+      required: true,
+    }
   },
 
   data() {
@@ -43,7 +47,7 @@ export default {
       return this.$store.getters.currentQuestion;
     },
     currentQuestionIndex() {
-      const questionIndex = parseInt(this.$route.params.questionIndex);
+      const questionIndex = parseInt(this.questionIndex);
       const maxIndex = this.totalQuestions;
       if (isNaN(questionIndex) || questionIndex < 1 || questionIndex > maxIndex) {
         this.$router.push("/");

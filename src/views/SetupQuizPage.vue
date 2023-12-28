@@ -31,6 +31,7 @@
 import axios from 'axios';
 import BaseSelect from '@/components/BaseSelect.vue';
 import BaseInput from '@/components/BaseInput.vue';
+
 export default {
   name: 'SetupQuizPage',
   components: {
@@ -44,6 +45,7 @@ export default {
       selectedDifficulty: '',
       numQuestions: null,
       maxNumQuestions: 116,
+      errorFetchingCategories: false,
     };
   },
   mounted() {
@@ -56,6 +58,7 @@ export default {
         this.categories = response.data.trivia_categories;
       } catch (error) {
         console.error('Error fetching categories:', error);
+        this.errorFetchingCategories = true;
       }
     },
     async startQuiz() {
@@ -63,18 +66,21 @@ export default {
         alert('Number of Questions should be between 1 and 116');
         return;
       }
-
-      const response = await axios.get(`https://opentdb.com/api.php?amount=${this.numQuestions}&category=${this.selectedCategory}&difficulty=${this.selectedDifficulty}&type=multiple`);
-      const questions = response.data.results.map((question) => {
-        return {
-          question: question.question,
-          correctAnswer: question.correct_answer,
-          incorrectAnswers: question.incorrect_answers,
-        };
-      });
-      this.$store.commit('setQuestions', questions);
-      this.$store.commit('setCurrentQuestionIndex', 0);
-      this.$router.push(`/quiz/1`);
+      try {
+        const response = await axios.get(`https://opentdb.com/api.php?amount=${this.numQuestions}&category=${this.selectedCategory}&difficulty=${this.selectedDifficulty}&type=multiple`);
+        const questions = response.data.results.map((question) => {
+          return {
+            question: question.question,
+            correctAnswer: question.correct_answer,
+            incorrectAnswers: question.incorrect_answers,
+          };
+        });
+        this.$store.commit('setQuestions', questions);
+        this.$store.commit('setCurrentQuestionIndex', 0);
+        this.$router.push(`/quiz/1`);
+      } catch (error) {
+        console.error('Error fetching quiz questions:', error);
+      }
     },
   },
 };
