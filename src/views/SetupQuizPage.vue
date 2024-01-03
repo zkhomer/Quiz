@@ -6,12 +6,23 @@
         <label for="category">Category:</label>
         <BaseSelect id="category" v-model="selectedCategory" required>
           <option value="" disabled selected>Select a category</option>
-          <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option>
+          <option
+            v-for="category in categories"
+            :key="category.id"
+            :value="category.id"
+          >
+            {{ category.name }}
+          </option>
         </BaseSelect>
       </div>
       <div class="form-group">
         <label for="difficulty">Difficulty:</label>
-        <BaseSelect id="difficulty" v-model="selectedDifficulty" required :disabled="!selectedCategory">
+        <BaseSelect
+          id="difficulty"
+          v-model="selectedDifficulty"
+          required
+          :disabled="!selectedCategory"
+        >
           <option value="" disabled selected>Select a difficulty</option>
           <option value="easy">Easy</option>
           <option value="medium">Medium</option>
@@ -20,20 +31,29 @@
       </div>
       <div class="form-group">
         <label for="num-questions">Number of Questions:</label>
-        <BaseInput type="number" id="num-questions" v-model="numQuestions" :min="1" :max="maxNumQuestions" required :disabled="!selectedCategory || !selectedDifficulty"></BaseInput>
+        <BaseInput
+          type="number"
+          id="num-questions"
+          v-model="numQuestions"
+          :min="1"
+          :max="maxNumQuestions"
+          required
+          :disabled="!selectedCategory || !selectedDifficulty"
+        ></BaseInput>
       </div>
-      <button type="submit" :disabled="!selectedCategory || !selectedDifficulty || !numQuestions">Start Quiz</button>
+      <button type="submit">Start Quiz</button>
     </form>
   </div>
 </template>
 
-<script>
-import axios from 'axios';
-import BaseSelect from '@/components/BaseSelect.vue';
-import BaseInput from '@/components/BaseInput.vue';
+<script lang="ts">
+import { defineComponent } from "vue";
+import BaseSelect from "@/components/BaseSelect.vue";
+import BaseInput from "@/components/BaseInput.vue";
+import { QuizService } from "@/services/fetchServices";
 
-export default {
-  name: 'SetupQuizPage',
+export default defineComponent({
+  name: "SetupQuizPage",
   components: {
     BaseSelect,
     BaseInput,
@@ -41,11 +61,11 @@ export default {
   data() {
     return {
       categories: [],
-      selectedCategory: '',
-      selectedDifficulty: '',
+      selectedCategory: "",
+      selectedDifficulty: "",
       numQuestions: null,
       maxNumQuestions: 116,
-      errorFetchingCategories: false,
+      formSubmitted: false,
     };
   },
   mounted() {
@@ -54,36 +74,38 @@ export default {
   methods: {
     async fetchCategories() {
       try {
-        const response = await axios.get('https://opentdb.com/api_category.php');
-        this.categories = response.data.trivia_categories;
+        const quizService = new QuizService();
+        this.categories = await quizService.fetchCategories();
       } catch (error) {
-        console.error('Error fetching categories:', error);
-        this.errorFetchingCategories = true;
+        console.error("Error fetching categories:", error);
       }
     },
     async startQuiz() {
-      if (this.numQuestions < 1 || this.numQuestions > 116) {
-        alert('Number of Questions should be between 1 and 116');
+      this.formSubmitted = true;
+      if (
+        !this.selectedCategory ||
+        !this.selectedDifficulty ||
+        !this.numQuestions
+      ) {
         return;
       }
+
       try {
-        const response = await axios.get(`https://opentdb.com/api.php?amount=${this.numQuestions}&category=${this.selectedCategory}&difficulty=${this.selectedDifficulty}&type=multiple`);
-        const questions = response.data.results.map((question) => {
-          return {
-            question: question.question,
-            correctAnswer: question.correct_answer,
-            incorrectAnswers: question.incorrect_answers,
-          };
-        });
-        this.$store.commit('setQuestions', questions);
-        this.$store.commit('setCurrentQuestionIndex', 0);
+        const quizService = new QuizService();
+        const questions = await quizService.startQuiz(
+          this.numQuestions,
+          this.selectedCategory,
+          this.selectedDifficulty
+        );
+        this.$store.commit("setQuestions", questions);
+        this.$store.commit("setCurrentQuestionIndex", 0);
         this.$router.push(`/quiz/1`);
       } catch (error) {
-        console.error('Error fetching quiz questions:', error);
+        console.error("Error starting quiz:", error);
       }
     },
   },
-};
+});
 </script>
 
 <style>

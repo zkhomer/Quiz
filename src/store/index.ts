@@ -1,49 +1,54 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-
+import Vue from "vue";
+import Vuex, { StoreOptions } from "vuex";
+import router from "@/router";
+import { Question, QuizState } from "@/types/quiz";
+import { QuizService } from "@/services/fetchServices";
 Vue.use(Vuex);
 
-const STORAGE_KEY = 'quiz-app-state';
+const STORAGE_KEY = "quiz-app-state";
 
-export default new Vuex.Store({
+const quizService = new QuizService();
+
+const storeOptions: StoreOptions<QuizState> = {
   state: {
     categories: [],
-    selectedCategory: '',
+    selectedCategory: "",
     difficulties: [],
-    selectedDifficulty: '',
+    selectedDifficulty: "",
     numQuestions: null,
     currentQuestionIndex: 0,
     questions: [],
     selectedAnswers: [],
   },
+
   mutations: {
-    setCategories(state, categories) {
+    setCategories(state: QuizState, categories) {
       state.categories = categories;
     },
-    setSelectedCategory(state, category) {
+    setSelectedCategory(state: QuizState, category) {
       state.selectedCategory = category;
     },
-    setDifficulties(state, difficulties) {
+    setDifficulties(state: QuizState, difficulties) {
       state.difficulties = difficulties;
     },
-    setSelectedDifficulty(state, difficulty) {
+    setSelectedDifficulty(state: QuizState, difficulty) {
       state.selectedDifficulty = difficulty;
     },
-    setNumQuestions(state, numQuestions) {
+    setNumQuestions(state: QuizState, numQuestions) {
       state.numQuestions = numQuestions;
     },
-    setCurrentQuestionIndex(state, index) {
+    setCurrentQuestionIndex(state: QuizState, index) {
       state.currentQuestionIndex = index;
     },
-    setQuestions(state, questions) {
+    setQuestions(state: QuizState, questions) {
       state.questions = questions;
     },
-    setSelectedAnswer(state, answer) {
+    setSelectedAnswer(state: QuizState, answer) {
       Vue.set(state.selectedAnswers, state.currentQuestionIndex, answer);
     },
     resetQuiz(state) {
-      state.selectedCategory = '';
-      state.selectedDifficulty = '';
+      state.selectedCategory = "";
+      state.selectedDifficulty = "";
       state.numQuestions = null;
       state.currentQuestionIndex = 0;
       state.questions = [];
@@ -53,51 +58,44 @@ export default new Vuex.Store({
   actions: {
     async fetchCategories({ commit }) {
       try {
-        const response = await fetch('https://opentdb.com/api_category.php');
-        const data = await response.json();
-        commit('setCategories', data.trivia_categories);
+        const categories = await quizService.fetchCategories();
+        commit("setCategories", categories);
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        console.error("Error fetching categories:", error);
       }
     },
     async fetchDifficulties({ commit }) {
       try {
-        const response = await fetch('https://opentdb.com/api_config.php');
-        const data = await response.json();
-        commit('setDifficulties', data.difficulty_levels);
+        const difficulties = await quizService.fetchDifficulties();
+        commit("setDifficulties", difficulties);
       } catch (error) {
-        console.error('Error fetching difficulties:', error);
+        console.error("Error fetching difficulties:", error);
       }
     },
     async startQuiz({ state, commit, dispatch }) {
       try {
-        const response = await fetch(
-            `https://opentdb.com/api.php?amount=${state.numQuestions}&category=${state.selectedCategory}&difficulty=${state.selectedDifficulty}`
+        const numQuestions: number = state.numQuestions || 0;
+        const questions: Question[] = await quizService.startQuiz(
+          numQuestions,
+          state.selectedCategory,
+          state.selectedDifficulty
         );
-        const data = await response.json();
-        const questions = data.results.map((question) => {
-          return {
-            question: question.question,
-            correctAnswer: question.correct_answer,
-            incorrectAnswers: question.incorrect_answers,
-          };
-        });
-        commit('setQuestions', questions);
-        dispatch('nextQuestion');
+        commit("setQuestions", questions);
+        dispatch("nextQuestion");
       } catch (error) {
-        console.error('Error starting quiz:', error);
+        console.error("Error starting quiz:", error);
       }
     },
     nextQuestion({ state, commit }) {
       if (state.currentQuestionIndex < state.questions.length - 1) {
-        commit('setCurrentQuestionIndex', state.currentQuestionIndex + 1);
+        commit("setCurrentQuestionIndex", state.currentQuestionIndex + 1);
         const questionIndex = state.currentQuestionIndex + 1;
         router.push(`/quiz/${questionIndex}`);
       }
     },
     prevQuestion({ state, commit }) {
       if (state.currentQuestionIndex > 0) {
-        commit('setCurrentQuestionIndex', state.currentQuestionIndex - 1);
+        commit("setCurrentQuestionIndex", state.currentQuestionIndex - 1);
         const questionIndex = state.currentQuestionIndex - 1;
         router.push(`/quiz/${questionIndex}`);
       }
@@ -110,7 +108,7 @@ export default new Vuex.Store({
           numCorrectAnswers++;
         }
       });
-      commit('resetQuiz');
+      commit("resetQuiz");
       return numCorrectAnswers;
     },
   },
@@ -123,15 +121,17 @@ export default new Vuex.Store({
     },
   },
   plugins: [localStoragePlugin],
-});
+};
 
-function localStoragePlugin(store) {
+function localStoragePlugin(store: any) {
   const savedState = localStorage.getItem(STORAGE_KEY);
   if (savedState) {
     store.replaceState(JSON.parse(savedState));
   }
 
-  store.subscribe((mutation, state) => {
+  store.subscribe((mutation: any, state: QuizState) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   });
 }
+
+export default new Vuex.Store<QuizState>(storeOptions);

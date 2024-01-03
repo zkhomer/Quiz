@@ -1,4 +1,4 @@
-# quiz
+# ts-quiz
 
 ## Project setup
 ```

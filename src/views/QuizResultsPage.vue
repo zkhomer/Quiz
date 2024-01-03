@@ -1,27 +1,33 @@
 <template>
   <div class="quiz-results-page">
     <h2 class="title">Quiz Results</h2>
-    <p class="score">Your Score: {{ correctAnswersCount }} / {{ totalQuestions }}</p>
+    <p class="score">
+      Your Score: {{ correctAnswersCount }} / {{ totalQuestions }}
+    </p>
 
     <table class="questions-table">
       <thead>
-      <tr>
-        <th>Question</th>
-        <th>Correct Answer</th>
-        <th>Your Answer</th>
-      </tr>
+        <tr>
+          <th>Question</th>
+          <th>Correct Answer</th>
+          <th>Your Answer</th>
+        </tr>
       </thead>
       <tbody>
-      <tr v-for="(question, index) in questions" :key="index">
-        <td v-html="question.question">{{ question.question }}</td>
-        <td v-html="question.correctAnswer">{{ question.correctAnswer }}</td>
-        <td
-          v-html="selectedAnswers[index]"
-          :class="(isAnswerCorrect(question, index)) ? 'correct-answer' : 'incorrect-answer'"
-        >
-          {{ selectedAnswers[index] }}
-        </td>
-      </tr>
+        <tr v-for="(question, index) in questions" :key="index">
+          <td v-html="question.question">{{ question.question }}</td>
+          <td v-html="question.correctAnswer">{{ question.correctAnswer }}</td>
+          <td
+            v-html="selectedAnswers[index]"
+            :class="
+              isAnswerCorrect(question, index)
+                ? 'correct-answer'
+                : 'incorrect-answer'
+            "
+          >
+            {{ selectedAnswers[index] }}
+          </td>
+        </tr>
       </tbody>
     </table>
     <router-link to="/" class="home-link">Home</router-link>
@@ -31,7 +37,9 @@
 <script>
 export default {
   name: "QuizResultsPage",
-
+  mounted() {
+    console.log(this.isAnswerCorrect);
+  },
   computed: {
     totalQuestions() {
       return this.$store.getters.totalQuestions;
@@ -43,16 +51,19 @@ export default {
       return this.$store.state.selectedAnswers;
     },
     correctAnswersCount() {
-      return this.questions.filter((question, index) => this.isAnswerCorrect(question, index)).length;
-    }
+      return this.questions.filter((question, index) =>
+        this.isAnswerCorrect(question, index)
+      ).length;
+    },
   },
 
   methods: {
     isAnswerCorrect(question, index) {
+      console.log("ololo", question, index);
       const selectedAnswer = this.selectedAnswers[index];
       return selectedAnswer === question.correctAnswer;
-    }
-  }
+    },
+  },
 };
 </script>
 

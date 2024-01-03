@@ -6,16 +6,14 @@
 
 <script>
 export default {
-  name: 'BaseButton',
+  name: "BaseButton",
   props: {
     buttonClass: {
       type: String,
-      default: ''
-    }
-  }
+      default: "",
+    },
+  },
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
