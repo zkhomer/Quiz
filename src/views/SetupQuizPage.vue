@@ -7,9 +7,9 @@
         <BaseSelect id="category" v-model="selectedCategory" required>
           <option value="" disabled selected>Select a category</option>
           <option
-            v-for="category in categories"
-            :key="category.id"
-            :value="category.id"
+              v-for="category in categories"
+              :key="category.id"
+              :value="category.id"
           >
             {{ category.name }}
           </option>
@@ -18,10 +18,10 @@
       <div class="form-group">
         <label for="difficulty">Difficulty:</label>
         <BaseSelect
-          id="difficulty"
-          v-model="selectedDifficulty"
-          required
-          :disabled="!selectedCategory"
+            id="difficulty"
+            v-model="selectedDifficulty"
+            required
+            :disabled="!selectedCategory"
         >
           <option value="" disabled selected>Select a difficulty</option>
           <option value="easy">Easy</option>
@@ -32,13 +32,13 @@
       <div class="form-group">
         <label for="num-questions">Number of Questions:</label>
         <BaseInput
-          type="number"
-          id="num-questions"
-          v-model="numQuestions"
-          :min="1"
-          :max="maxNumQuestions"
-          required
-          :disabled="!selectedCategory || !selectedDifficulty"
+            type="number"
+            id="num-questions"
+            v-model.number="numQuestions"
+            :min="1"
+            :max="maxNumQuestions"
+            required
+            :disabled="!selectedCategory || !selectedDifficulty"
         ></BaseInput>
       </div>
       <button type="submit">Start Quiz</button>
@@ -47,23 +47,18 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import BaseSelect from "@/components/BaseSelect.vue";
-import BaseInput from "@/components/BaseInput.vue";
-import { QuizService } from "@/services/fetchServices";
+import Vue from 'vue';
+import BaseSelect from '@/components/BaseSelect.vue';
+import BaseInput from '@/components/BaseInput.vue';
+import { QuizService } from '@/services/fetchServices';
 
-export default defineComponent({
-  name: "SetupQuizPage",
-  components: {
-    BaseSelect,
-    BaseInput,
-  },
+export default Vue.extend({
   data() {
     return {
-      categories: [],
-      selectedCategory: "",
-      selectedDifficulty: "",
-      numQuestions: null,
+      categories: [] as { id: string; name: string }[],
+      selectedCategory: '',
+      selectedDifficulty: '',
+      numQuestions: null as number | null,
       maxNumQuestions: 116,
       formSubmitted: false,
     };
@@ -71,21 +66,25 @@ export default defineComponent({
   mounted() {
     this.fetchCategories();
   },
+  components: {
+    BaseSelect,
+    BaseInput,
+  },
   methods: {
     async fetchCategories() {
       try {
         const quizService = new QuizService();
         this.categories = await quizService.fetchCategories();
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error('Error fetching categories:', error);
       }
     },
     async startQuiz() {
       this.formSubmitted = true;
       if (
-        !this.selectedCategory ||
-        !this.selectedDifficulty ||
-        !this.numQuestions
+          !this.selectedCategory ||
+          !this.selectedDifficulty ||
+          !this.numQuestions
       ) {
         return;
       }
@@ -93,15 +92,15 @@ export default defineComponent({
       try {
         const quizService = new QuizService();
         const questions = await quizService.startQuiz(
-          this.numQuestions,
-          this.selectedCategory,
-          this.selectedDifficulty
+            this.numQuestions,
+            this.selectedCategory,
+            this.selectedDifficulty
         );
-        this.$store.commit("setQuestions", questions);
-        this.$store.commit("setCurrentQuestionIndex", 0);
+        this.$store.commit('setQuestions', questions);
+        this.$store.commit('setCurrentQuestionIndex', 0);
         this.$router.push(`/quiz/1`);
       } catch (error) {
-        console.error("Error starting quiz:", error);
+        console.error('Error starting quiz:', error);
       }
     },
   },
